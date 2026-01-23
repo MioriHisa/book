@@ -1,0 +1,15 @@
+# 仮想環境
+myvenv/
+django-venv/
+venv/
+.env
+
+# Pythonキャッシュ
+__pycache__/
+*.py[cod]
+
+# データベース（練習用データ）
+db.sqlite3
+
+# OSのゴミ
+.DS_Store

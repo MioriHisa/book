@@ -1,0 +1,164 @@
+{% extends 'bookreserve/base.html' %}
+
+{% block header %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">書籍一覧</h1>
+    <form method="get" action="{% url 'list' %}" class="d-flex w-50">
+        <input class="form-control me-2" type="search" name="q" placeholder="タイトルを検索" aria-label="Search">
+        <button class="btn btn-outline-success flex-shrink-0" type="submit">検索</button>
+    </form>
+</div>
+{% endblock header %}
+
+{% block content %}
+{% if is_empty and query %}
+<div class="alert alert-warning text-center" role="alert">
+    "{{ query }}" に一致する書籍は見つかりませんでした。
+
+</div>
+{% endif %}
+
+<div class ="row g-4">
+    {% for book in books %}
+        <div class="col-3">
+            <div class="card">
+                <div class="image-container">
+                    <img src="{{ book.picture.url }}" class="card-img-top" alt="{{ book.title }}">
+                </div>
+                <div class="card-body">
+                    <h7 class="card-title">{{ book.title }}</h7>
+                    <div class="flex-container">
+                            <a href="{% url 'detail' book.pk %}" class="btn btn-info mt-2">詳細</a>
+                            {% if user.is_authenticated %}
+                                {% if book.reservation_availability %}
+                                    <button type="button" class="btn btn-info ms-2 mt-2"
+                                    data-bs-toggle="modal" data-bs-target="#confirmRentalModal"
+                                    data-book-id="{{ book.pk }}" data-book-title="{{ book.title }}">予約可</button>
+                                    {% else %}
+                                        <button type="button" class="btn btn-secondary ms-2 mt-2">予約不可</button>
+                                    {% endif %}
+                            {% endif %}
+                    </div>
+                    {% if user.is_authenticated and book.reserver == request.user.username %}
+                        {% if book.return_date %}
+                            <p class="card-text text-danger mt-3">返却日: {{ book.return_date|date:"Y年m月d日" }}</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{# --- モーダルのHTMLコード） --- #}
+<div class="modal fade" id="confirmRentalModal" tabindex="-1" aria-labelledby="confirmRentalModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmRentalModalLabel">書籍のレンタル確認</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            {# formタグのaction属性は不要です。JavaScriptで制御します。 #}
+            <form method="post" id="rentalForm">
+                {% csrf_token %} {# CSRFトークンは必須です #}
+                <div class="modal-body">
+                    <p><strong id="modalBookTitle"></strong> をレンタルしますか？</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">いいえ</button>
+                    <button type="submit" class="btn btn-primary" id="submitRentalButton">はい</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<div id="url_templates" data-reserve-url="{% url 'reserve' 0 %}"></div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("★★JavaScriptコードがロードされました★★");
+
+    var urlTemplates = document.getElementById('url_templates');
+    var reserveUrlPattern = urlTemplates ? urlTemplates.getAttribute('data-reserve-url') : null;
+
+    console.log("reserveUrlPattern:", reserveUrlPattern);
+
+    var confirmRentalModal = document.getElementById('confirmRentalModal');
+    var submitRentalButton = document.getElementById('submitRentalButton');
+    var rentalForm = document.getElementById('rentalForm');
+    
+    console.log("モーダル要素の存在チェック:");
+    console.log("confirmRentalModal:", confirmRentalModal);
+    console.log("submitRentalButton:", submitRentalButton);
+    console.log("rentalForm:", rentalForm);
+
+    if (confirmRentalModal && submitRentalButton && rentalForm) {
+        confirmRentalModal.addEventListener('show.bs.modal', function (event) {
+            console.log("show.bs.modalイベントが発火しました");
+            var button = event.relatedTarget;
+            var bookId = button.getAttribute('data-book-id');
+            var bookTitle = button.getAttribute('data-book-title');
+            
+            console.log("取得したbookId:", bookId);
+            console.log("取得したbookTitle:", bookTitle);
+
+            var modalTitleElement = confirmRentalModal.querySelector('#modalBookTitle');
+
+            if (modalTitleElement) {
+                modalTitleElement.textContent = bookTitle;
+            }
+            submitRentalButton.setAttribute('data-book-id', bookId);
+        });
+
+        rentalForm.addEventListener('submit', function(event) {
+            console.log("★★フォームのSubmitイベントが発火しました★★");
+            event.preventDefault();
+
+            var bookId = submitRentalButton.getAttribute('data-book-id');
+            var url = reserveUrlPattern ? reserveUrlPattern.replace('0', bookId) : null;
+            var csrfToken = rentalForm.querySelector('[name="csrfmiddlewaretoken"]').value;
+
+            console.log("最終的なリクエストURL:", url);
+
+            if (!bookId || !url) {
+                console.error("処理に必要な情報が不足しています。");
+                alert("処理に必要な情報が不足しています。ページをリロードしてください。");
+                return;
+            }
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams({})
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                return response.json().then(err => { throw new Error(JSON.stringify(err)); });
+            })
+            .then(data => {
+                console.log('成功:', data);
+                var bsModal = bootstrap.Modal.getInstance(confirmRentalModal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+                location.reload();
+            })
+            .catch(error => {
+                console.error('エラー:', error);
+                alert('レンタル処理中にエラーが発生しました。\n詳細: ' + error.message);
+            });
+        });
+    } else {
+        console.error("必要なモーダル要素、ボタン、またはフォームが見つかりませんでした。HTMLを確認してください。");
+    }
+});
+</script>
+{% endblock extra_js %}

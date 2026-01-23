@@ -1,0 +1,51 @@
+{% extends 'bookreserve/base.html' %}
+{% block header %}
+<h1>書籍詳細</h1>
+{% endblock header %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="pr-4">
+                <div class="detail-image-container"> {# 画像のコンテナ、CSSでサイズ調整 #}
+                    <img src="{{ book.picture.url }}" alt="{{ book.title }}の画像" class="img-fluid">
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="pl-4">
+                <h4>{{book.title}}</h4>
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <th scope="row" class="text-nowrap">著者　：</th>
+                            <td>{{book.author}}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-nowrap">出版日：</th>
+                            <td class="text-start">{{book.publication_date}}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-nowrap">予約　：</th>
+                            <td>
+                                {% if book.reservation_availability %}
+                                    <span class="badge text-bg-success">予約可</span>
+                                {% else %}
+                                    <span class="badge text-bg-danger">予約不可</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-nowrap">返却日：</th>
+                            <td>{{book.return_date}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <a href="{% url 'list' %}" class="btn btn-secondary mt-3">一覧に戻る</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

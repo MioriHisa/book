@@ -1,0 +1,41 @@
+/* style.css (またはDjangoのstaticファイルとして読み込むCSSファイル) */
+
+.image-container {
+  width: 100%; /* 親要素（カード）の幅に合わせる */
+  height: 300px; /* ★画像を固定したい高さ（例: 200px） */
+  overflow: hidden; /* コンテナからはみ出る部分を隠す */
+  display: flex; /* flexboxを使って画像を中央揃えにする（オプション） */
+  justify-content: center;
+  align-items: center;
+}
+
+.image-container img {
+  width: 100%; /* コンテナの幅に合わせる */
+  height: 100%; /* コンテナの高さに合わせる */
+  object-fit: cover; /* ★画像がコンテナを覆うように拡大・縮小し、アスペクト比を保持する */
+  /* object-fit: contain; でも良いが、画像全体を表示すると余白ができる場合がある */
+}
+
+.card-body {
+  width: 100%;
+  height: 200px;
+}
+.card-title {
+  font-weight: bold;
+}
+
+.flex-container {
+  display: flex; /* これで子要素が横並びになります */
+    gap: 10px; /* 例: 子要素間に10pxの隙間 */
+}
+
+.detail-image-container {
+      width: 100%;
+      height: auto; /* グリッドの高さに合わせて自動調整 */
+      overflow: hidden;
+}
+
+.table th.text-nowrap {
+      width: 80px;
+      min-width: 80px;
+}

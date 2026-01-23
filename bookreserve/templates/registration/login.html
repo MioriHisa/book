@@ -1,0 +1,14 @@
+{% extends 'bookreserve/base.html' %}
+{% block header %}
+<h1>ログイン</h1>
+{% endblock header %}
+
+{% block content %}
+<div class="container mt-4">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">ログイン</button>
+    </form>
+</div>
+{% endblock content %}

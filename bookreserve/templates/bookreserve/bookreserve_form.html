@@ -1,7 +1,7 @@
 {% extends 'bookreserve/base.html' %} 
 
 {% block header %}
-<h1 class="display-5 text-center my-4 text-primary">書籍リクエスト</h1>
+<h1 class="display-5 text-center my-4 text-primary">書籍の登録・編集</h1>
 {% endblock header %}
 
 {% block content %}
@@ -10,10 +10,10 @@
     <div class="col-md-8 col-lg-6">
         <div class="card shadow-lg border-0 p-3">
             <div class="card-body p-5">
-                <h2 class="card-title text-center mb-4 h4">探している本をリクエスト</h2>
+                <h2 class="card-title text-center mb-4 h4">書籍を登録</h2>
                 <p class="text-center text-muted mb-4">以下のフォームに必要事項を記入してください。</p>
 
-                <form method="post">
+                <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     
                     {% for field in form %}
@@ -58,7 +58,7 @@
                     
                     <div class="d-grid gap-2 mt-4">
                         <button type="submit" class="btn btn-primary btn-lg">
-                            リクエストを送信
+                            登録
                         </button>
                     </div>
                 </form>

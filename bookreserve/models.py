@@ -1,13 +1,13 @@
 from django.db import models
-from django.contrib.auth.models import User # 💡 ここを修正: Userモデルを正しくインポート
-from datetime import date # 返却予定日などの処理のため (新規追加)
+from django.contrib.auth.models import User
+import datetime
 
 class BookReserve(models.Model):
     title = models.CharField("書籍名", max_length=60)
     author = models.CharField("著者", max_length=60)
-    publication_date = models.DateField("出版日", null=True)
-    picture = models.ImageField(upload_to='images/', blank=True, null=True)
-    reservation_availability = models.BooleanField("予約可否")
+    publication_date = models.DateField("出版日", default=datetime.date.today)
+    picture = models.ImageField(upload_to='images/', default='')
+    reservation_availability = models.BooleanField("予約可否", default=True,)
     reserver = models.CharField("予約者", max_length=30, blank=True, null=True)
     return_date = models.DateField("返却日", blank=True, null=True)
 
